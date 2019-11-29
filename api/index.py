@@ -1,5 +1,7 @@
-from flask import Flask, jsonify, Response
+#from flask import Flask, jsonify, Response
 #from flask_cors import CORS
+from sanic import Sanic, response
+app = Sanic()
 
 import json
 import requests
@@ -46,7 +48,8 @@ SELECT
 FROM parsed_logs
 '''
 
-app = Flask(__name__)
+app = Sanic()
+#app = Flask(__name__)
 #CORS(app)
 
 parser_type = 'log'
@@ -144,23 +147,23 @@ def contract_to_sqls(contract_address):
 ### FLASK
 
 @app.route('/api/')
-def index():
-    return Response('<p>Alive!</p>')
+async def index(request):
+    return response.json({'status': 'alive'})
 
 @app.route('/api/test')
-def test():
-    return Response('<p>Test!</p>')
+async def test(request):
+    return response.json({'status': 'test'})
 
 
 @app.route('/api/queries/<contract>')
-def queries(contract):
+async def queries(request, contract):
     queries = contract_to_sqls(contract)
-    return jsonify(queries)
+    return response.json(queries)
 
 @app.route('/api/tables/<contract>')
-def tables(contract):
+async def tables(request, contract):
     tables = contract_to_table_definitions(contract)
-    return jsonify(tables)
+    return response.json(tables)
 
 #if __name__ == "__main__":
 #    app.run(debug=True, host='127.0.0.1', port=PORT)
