@@ -3,7 +3,7 @@
   "name": "abi-parser",
   "builds": [
       { "src": "frontend/package.json", "use": "@now/static-build", "config": { "distDir": "build" } },
-      { "src": "api/index.py", "use": "@now/python" }
+      { "src": "api/index.py", "use": "@now/python", "config": { "maxLambdaSize": "60mb" } }
   ],
   "routes": [
       { "src": "/api/(.*)", "dest": "/api/" },
