@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, Response
-from flask_cors import CORS
+#from flask_cors import CORS
 
 import json
 import requests
@@ -47,7 +47,7 @@ FROM parsed_logs
 '''
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 
 parser_type = 'log'
 dataset_name = '<INSERT_DATASET_NAME>'
