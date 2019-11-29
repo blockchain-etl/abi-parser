@@ -1,15 +1,8 @@
-#from flask import Flask, jsonify, Response
-#from flask_cors import CORS
 from sanic import Sanic, response
-app = Sanic()
-
 from requests import get
 from jinja2 import Template
 from eth_utils import event_abi_to_log_topic
 from json import loads, dumps
-
-#from parse.abi2bigquery import contract_to_sqls
-#from parse.abi2table_definition import contract_to_table_definitions
 
 PORT = 3000
 ETHERSCAN_API_KEY = 'YourApiKeyToken'
@@ -48,8 +41,6 @@ FROM parsed_logs
 '''
 
 app = Sanic()
-#app = Flask(__name__)
-#CORS(app)
 
 parser_type = 'log'
 dataset_name = '<INSERT_DATASET_NAME>'
@@ -103,9 +94,6 @@ def contract_to_table_definitions(contract_address):
 def s2bq_type(type):
   return SOLIDITY_TO_BQ_TYPES.get(type, 'STRING')
 
-def read_abi_from_file(filepath):
-  return loads(open(filepath).read())
-
 def get_events_from_abi(abi):
   for a in abi:
     if a['type'] == 'event':
@@ -116,10 +104,6 @@ def get_columns_from_event_abi(event_abi):
 
 def create_struct_fields_from_event_abi(event_abi):
   return ', '.join(['`' + a.get('name') + '` ' + s2bq_type(a.get('type')) for a in event_abi['inputs']])
-
-# TODO: remove
-def read_sql_template(filepath):
-  return Template(open(filepath).read())
 
 def event_to_sql(event_abi, template, contract_address):
   event_topic = '0x' + event_abi_to_log_topic(event_abi).hex()
@@ -138,7 +122,6 @@ def contract_to_sqls(contract_address):
   abi = read_abi_from_address(contract_address)
   event_abis = get_events_from_abi(abi)
   tpl = Template(TEMPLATE)
-  #tpl = read_sql_template('parse_logs.sql')
   for a in event_abis:
     result[a['name']] = event_to_sql(a, tpl, contract_address)
   return result
