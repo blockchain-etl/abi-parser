@@ -3,11 +3,10 @@
 from sanic import Sanic, response
 app = Sanic()
 
-import json
-import requests
+from requests import get
 from jinja2 import Template
 from eth_utils import event_abi_to_log_topic
-import json
+from json import loads, dumps
 
 #from parse.abi2bigquery import contract_to_sqls
 #from parse.abi2table_definition import contract_to_table_definitions
@@ -62,8 +61,8 @@ def read_abi_from_address(address):
   a = address.lower()
   k = ETHERSCAN_API_KEY
   url = f'https://api.etherscan.io/api?module=contract&action=getabi&address={a}&apikey={k}'
-  json_response = requests.get(url).json()
-  return json.loads(json_response['result'])
+  json_response = get(url).json()
+  return loads(json_response['result'])
 
 def create_table_name(abi):
   return table_prefix + '_event_' + abi['name']
@@ -105,7 +104,7 @@ def s2bq_type(type):
   return SOLIDITY_TO_BQ_TYPES.get(type, 'STRING')
 
 def read_abi_from_file(filepath):
-  return json.loads(open(filepath).read())
+  return loads(open(filepath).read())
 
 def get_events_from_abi(abi):
   for a in abi:
@@ -127,7 +126,7 @@ def event_to_sql(event_abi, template, contract_address):
   struct_fields = create_struct_fields_from_event_abi(event_abi)
   columns = get_columns_from_event_abi(event_abi)
   return template.render(
-    abi=json.dumps(event_abi),
+    abi=dumps(event_abi),
     contract_address=contract_address.lower(),
     event_topic=event_topic,
     struct_fields=struct_fields,
