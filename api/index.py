@@ -164,5 +164,5 @@ async def tables(request, contract):
     tables = contract_to_table_definitions(contract)
     return response.json(tables)
 
-#if __name__ == "__main__":
-#    app.run(debug=True, host='127.0.0.1', port=PORT)
+if __name__ == "__main__":
+    app.run(debug=True, host='127.0.0.1', port=PORT)
