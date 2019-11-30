@@ -45,12 +45,6 @@ class App extends Component {
     await this.fetchData();
   }
 
-  async handleDownloadAll(e) {
-    e.preventDefault();
-    // TODO: consider updating the table object here
-    // ... or maybe it should be done inside Downloader
-  }
-
   async fetchData() {
     const { address } = this.state;
     const queriesApi = `${API_ENDPOINT}queries/${address}`;
@@ -90,7 +84,6 @@ class App extends Component {
           cardStyle={cardStyle}
           dataset={dataset}
           handleChangeDataset={this.handleChangeDataset.bind(this)}
-          handleDownloadAll={this.handleDownloadAll.bind(this)}
           />}
         {!isLoading && queries &&
           Object.entries(queries).map(obj => <Query

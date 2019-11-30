@@ -61,7 +61,6 @@ def read_contract_from_address(address):
   url = f'https://api.etherscan.io/api?module=contract&action=getsourcecode&address={a}&apikey={k}'
   json_response = get(url).json()
   contract = [x for x in json_response['result'] if 'ContractName' in x][0]
-  print(contract)
   return contract
 
 def create_table_name(abi):

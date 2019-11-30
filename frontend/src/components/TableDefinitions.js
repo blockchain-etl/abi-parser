@@ -11,7 +11,6 @@ export class TableDefinitions extends Component {
       queries,
       dataset,
       handleChangeDataset,
-      handleDownloadAll,
     } = this.props;
     return (
       <Card className="m-3" style={{ width: 450 }} body>
@@ -30,7 +29,6 @@ export class TableDefinitions extends Component {
             contract={contract}
             dataset={dataset}
             handleChangeDataset={handleChangeDataset}
-            handleDownloadAll={handleDownloadAll}
           />
         </Card>
     )
