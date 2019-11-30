@@ -11,7 +11,7 @@ export class Input extends Component {
       <div>
         <Card className="m-3" style={{ width: 450 }} body>
           <Form onSubmit={this.props.handleSubmit.bind(this)}>
-            <Form.Group controlId="formBasicEmail">
+            <Form.Group>
               <Form.Label>Generate SQL for Ethereum Events</Form.Label>
               <Form.Control
                 type="text"

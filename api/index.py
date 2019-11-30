@@ -45,7 +45,7 @@ app = Sanic()
 parser_type = 'log'
 dataset_name = '<INSERT_DATASET_NAME>'
 table_prefix = '<TABLE_PREFIX>'
-table_description = '<INSERT TABLE DESCRIPTION>'
+table_description = ''
 
 ### UTILS
 def read_abi_from_address(address):
@@ -54,6 +54,15 @@ def read_abi_from_address(address):
   url = f'https://api.etherscan.io/api?module=contract&action=getabi&address={a}&apikey={k}'
   json_response = get(url).json()
   return loads(json_response['result'])
+
+def read_contract_from_address(address):
+  a = address.lower()
+  k = ETHERSCAN_API_KEY
+  url = f'https://api.etherscan.io/api?module=contract&action=getsourcecode&address={a}&apikey={k}'
+  json_response = get(url).json()
+  contract = [x for x in json_response['result'] if 'ContractName' in x][0]
+  print(contract)
+  return contract
 
 def create_table_name(abi):
   return table_prefix + '_event_' + abi['name']
@@ -146,6 +155,11 @@ async def queries(request, contract):
 async def tables(request, contract):
     tables = contract_to_table_definitions(contract)
     return response.json(tables)
+
+@app.route('/api/contract/<contract>')
+async def tables(request, contract):
+    c = read_contract_from_address(contract)
+    return response.json(c)
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=PORT)

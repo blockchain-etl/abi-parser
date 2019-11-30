@@ -6,6 +6,7 @@ import Input from './components/Input';
 import Card from 'react-bootstrap/Card'
 import Spinner from 'react-bootstrap/Spinner'
 import Query from './components/Query';
+import TableDefinitions from './components/TableDefinitions';
 
 const API_ENDPOINT = '/api/';
 
@@ -19,6 +20,7 @@ class App extends Component {
     super(props);
     this.state = {
       address: '',
+      dataset: '',
       isLoading: false,
     }
   }
@@ -26,6 +28,12 @@ class App extends Component {
   handleChange(e) {
     this.setState({
       address: e.target.value
+    })
+  }
+
+  handleChangeDataset(e) {
+    this.setState({
+      dataset: e.target.value
     })
   }
 
@@ -37,6 +45,12 @@ class App extends Component {
     await this.fetchData();
   }
 
+  async handleDownloadAll(e) {
+    e.preventDefault();
+    // TODO: consider updating the table object here
+    // ... or maybe it should be done inside Downloader
+  }
+
   async fetchData() {
     const { address } = this.state;
     const queriesApi = `${API_ENDPOINT}queries/${address}`;
@@ -45,15 +59,19 @@ class App extends Component {
     const tablesApi = `${API_ENDPOINT}tables/${address}`;
     const tablesRes = await fetch(tablesApi);
     const tables = await tablesRes.json()
+    const contractApi = `${API_ENDPOINT}contract/${address}`;
+    const contractRes = await fetch(contractApi);
+    const contract = await contractRes.json()
     this.setState({
       queries,
       tables,
+      contract,
       isLoading: false,
     })
   }
 
   render() {
-    const { queries, tables, address, isLoading} = this.state;
+    const { queries, tables, contract, address, dataset, isLoading} = this.state;
     return (
       <div className="App">
         <Input
@@ -65,9 +83,15 @@ class App extends Component {
         {isLoading && <Card className="m-3" style={cardStyle} body>
           <Spinner animation="border" />
         </Card>}
-        {!isLoading && queries && <Card className="m-3" style={cardStyle} body>
-          {`${Object.entries(queries).length} events`}
-        </Card>}
+        {!isLoading && queries && <TableDefinitions
+          tables={tables}
+          contract={contract}
+          queries={queries}
+          cardStyle={cardStyle}
+          dataset={dataset}
+          handleChangeDataset={this.handleChangeDataset.bind(this)}
+          handleDownloadAll={this.handleDownloadAll.bind(this)}
+          />}
         {!isLoading && queries &&
           Object.entries(queries).map(obj => <Query
             title={obj[0]}
