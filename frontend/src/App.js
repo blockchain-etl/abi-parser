@@ -40,13 +40,13 @@ class App extends Component {
   async handleSubmit(e) {
     e.preventDefault();
     this.setState({
-      isLoading: !this.state.isLoading
+      isLoading: true,
     })
     await this.fetchData();
   }
 
   async fetchData() {
-    const { address } = this.state;
+    const address = this.state.address.toLowerCase();
     const queriesApi = `${API_ENDPOINT}queries/${address}`;
     const queriesRes = await fetch(queriesApi);
     const queries = await queriesRes.json()
@@ -74,7 +74,7 @@ class App extends Component {
           address={address}
           isLoading={isLoading}
           />
-        {isLoading && <Card className="m-3" style={cardStyle} body>
+        {isLoading && <Card className="m-3" style={{width: 480}} body>
           <Spinner animation="border" />
         </Card>}
         {!isLoading && queries && <TableDefinitions

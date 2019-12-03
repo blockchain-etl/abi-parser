@@ -16,8 +16,15 @@ export class InputDataset extends Component {
                 placeholder="Enter dataset name"
                 value={dataset}
                 onChange={handleChangeDataset.bind(this)}
+                required
               />
-              <Form.Text>For Blockchain-ETL</Form.Text>
+              <Form.Text>
+                For <a
+                  href="https://github.com/blockchain-etl/ethereum-etl-airflow"
+                  rel="noopener"
+                  target="_blank"
+                >Blockchain-ETL</a>
+              </Form.Text>
             </Form.Group>
             <Downloader
               tables={tables}

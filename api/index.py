@@ -5,7 +5,7 @@ from eth_utils import event_abi_to_log_topic
 from json import loads, dumps
 
 PORT = 3000
-ETHERSCAN_API_KEY = 'YourApiKeyToken'
+ETHERSCAN_API_KEY = '6H8VRTDHJVS6II983YY3DN8NCVBBHDA3MX' # should be env var, but whatever
 SOLIDITY_TO_BQ_TYPES = {
   'address': 'STRING',
 }

@@ -13,17 +13,9 @@ export class TableDefinitions extends Component {
       handleChangeDataset,
     } = this.props;
     return (
-      <Card className="m-3" style={{ width: 450 }} body>
+      <Card className="m-3" style={{ width: 480 }} body>
           <p>{`${Object.entries(queries).length} events found in contract ${contract.ContractName}:`}</p>
-          <ol>
-            {Object.entries(tables).map(obj => <li>
-              <TableLink
-                title={obj[0]}
-                table={obj[1]}
-              />
-            </li>)
-            }
-          </ol>
+          <ol>{Object.entries(tables).map(obj => <li>{obj[0]}</li>)}</ol>
           <InputDataset
             tables={tables}
             contract={contract}
