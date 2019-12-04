@@ -16,7 +16,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "yarn build",
-    "deploy": "firebase deploy"
+    "deploy": "firebase deploy --only hosting:abi-parser"
   },
   "eslintConfig": {
     "extends": "react-app"
