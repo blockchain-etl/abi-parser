@@ -85,7 +85,7 @@ class App extends Component {
           dataset={dataset}
           handleChangeDataset={this.handleChangeDataset.bind(this)}
           />}
-        {!isLoading && queries &&
+        {!isLoading && queries && tables &&
           Object.entries(queries).map(obj => <Query
             title={obj[0]}
             query={obj[1]}

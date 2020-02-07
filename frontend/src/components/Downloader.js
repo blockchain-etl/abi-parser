@@ -13,9 +13,13 @@ export class Downloader extends Component {
           variant="success"
           type="submit"
           onClick={() => {
+            let parserTypeToFileName = {
+                'log': '_event_',
+                'trace': '_call_'
+            };
             multiDownload(
-              Object.entries(tables).map(obj => {
-                const tableName = ContractName + '_event_' + obj[0]
+                Object.entries(tables).map(obj => {
+                const tableName = ContractName + parserTypeToFileName[obj[1].parser.type] + obj[0];
                 obj[1].table.dataset_name = dataset;
                 obj[1].table.table_name = tableName;
                 return URL.createObjectURL(
@@ -24,7 +28,7 @@ export class Downloader extends Component {
                 }
               ),
               {
-                rename: ({url, index, urls}) => ContractName + '_event_' + Object.entries(tables)[index][0] + '.json'
+                rename: ({url, index, urls}) => ContractName + parserTypeToFileName[Object.entries(tables)[index][1].parser.type] + Object.entries(tables)[index][0] + '.json'
               }
             );
           }}

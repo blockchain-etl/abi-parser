@@ -1,15 +1,17 @@
 from sanic import Sanic, response
 from requests import get
 from jinja2 import Template
-from eth_utils import event_abi_to_log_topic
+from eth_utils import event_abi_to_log_topic, function_abi_to_4byte_selector
 from json import loads, dumps
+
+from sanic_cors import CORS
 
 PORT = 3000
 ETHERSCAN_API_KEY = '6H8VRTDHJVS6II983YY3DN8NCVBBHDA3MX' # should be env var, but whatever
 SOLIDITY_TO_BQ_TYPES = {
   'address': 'STRING',
 }
-TEMPLATE = '''
+SQL_TEMPLATE_FOR_EVENT = '''
 CREATE TEMP FUNCTION
   PARSE_LOG(data STRING, topics ARRAY<STRING>)
   RETURNS STRUCT<{{struct_fields}}>
@@ -29,7 +31,7 @@ WITH parsed_logs AS
     ,PARSE_LOG(logs.data, logs.topics) AS parsed
 FROM `bigquery-public-data.crypto_ethereum.logs` AS logs
 WHERE address = '{{contract_address}}'
-  AND topics[SAFE_OFFSET(0)] = '{{event_topic}}'
+  AND topics[SAFE_OFFSET(0)] = '{{selector}}'
 )
 SELECT
      block_timestamp
@@ -40,9 +42,67 @@ SELECT
 FROM parsed_logs
 '''
 
-app = Sanic()
+SQL_TEMPLATE_FOR_FUNCTION = '''
+CREATE TEMP FUNCTION
+    PARSE_TRACE(data STRING)
+    RETURNS STRUCT<{{struct_fields}}, error STRING>
+    LANGUAGE js AS """
+    var abi = {{abi}};
+    var interface_instance = new ethers.utils.Interface([abi]);
 
-parser_type = 'log'
+    var result = {};
+    try {
+        var parsedTransaction = interface_instance.parseTransaction({data: data});
+        var parsedArgs = parsedTransaction.args;
+
+        if (parsedArgs && parsedArgs.length >= abi.inputs.length) {
+            for (var i = 0; i < abi.inputs.length; i++) {
+                var paramName = abi.inputs[i].name;
+                var paramValue = parsedArgs[i];
+                if (abi.inputs[i].type === 'address' && typeof paramValue === 'string') {
+                    // For consistency all addresses are lowercase.
+                    paramValue = paramValue.toLowerCase();
+                }
+                result[paramName] = paramValue;
+            }
+        } else {
+            result['error'] = 'Parsed transaction args is empty or has too few values.';
+        }
+    } catch (e) {
+        result['error'] = e.message;
+    }
+
+    return result;
+"""
+OPTIONS
+  ( library="gs://blockchain-etl-bigquery/ethers.js" );
+
+WITH parsed_traces AS
+(SELECT
+    traces.block_timestamp AS block_timestamp
+    ,traces.block_number AS block_number
+    ,traces.transaction_hash AS transaction_hash
+    ,traces.trace_address AS trace_address
+    ,PARSE_TRACE(traces.input) AS parsed
+FROM `bigquery-public-data.crypto_ethereum.traces` AS traces
+WHERE to_address = '{{contract_address}}'
+  AND STARTS_WITH(traces.input, '{{selector}}')
+  )
+SELECT
+     block_timestamp
+     ,block_number
+     ,transaction_hash
+     ,trace_address
+     ,parsed.error AS error
+     {% for column in columns %}
+    ,parsed.{{ column }} AS `{{ column }}`
+    {% endfor %}
+FROM parsed_traces
+'''
+
+app = Sanic()
+CORS(app)
+
 dataset_name = '<INSERT_DATASET_NAME>'
 table_prefix = '<TABLE_PREFIX>'
 table_description = ''
@@ -66,7 +126,7 @@ def read_contract_from_address(address):
 def create_table_name(abi):
   return table_prefix + '_event_' + abi['name']
 
-def abi_to_table_definition(abi, contract_address):
+def abi_to_table_definition(abi, contract_address, parser_type):
   table_name = create_table_name(abi)
   result = {}
   result['parser'] = {
@@ -91,20 +151,21 @@ def abi_to_table_definition(abi, contract_address):
 
 def contract_to_table_definitions(contract_address):
   abi = read_abi_from_address(contract_address)
-  results = {}
-  for a in abi:
-    if a['type'] == 'event':
-      event_name = (a['name'])
-      results[event_name] = abi_to_table_definition(a, contract_address)
-  return results
+
+  result = {}
+  for a in filter_by_type(abi, 'event'):
+    result[a['name']] = abi_to_table_definition(a, contract_address, 'log')
+  for a in filter_by_type(abi, 'function'):
+    result[a['name']] = abi_to_table_definition(a, contract_address, 'trace')
+  return result
 
 
 def s2bq_type(type):
   return SOLIDITY_TO_BQ_TYPES.get(type, 'STRING')
 
-def get_events_from_abi(abi):
+def filter_by_type(abi, type):
   for a in abi:
-    if a['type'] == 'event':
+    if a['type'] == type:
       yield a
 
 def get_columns_from_event_abi(event_abi):
@@ -113,25 +174,33 @@ def get_columns_from_event_abi(event_abi):
 def create_struct_fields_from_event_abi(event_abi):
   return ', '.join(['`' + a.get('name') + '` ' + s2bq_type(a.get('type')) for a in event_abi['inputs']])
 
-def event_to_sql(event_abi, template, contract_address):
-  event_topic = '0x' + event_abi_to_log_topic(event_abi).hex()
-  struct_fields = create_struct_fields_from_event_abi(event_abi)
-  columns = get_columns_from_event_abi(event_abi)
+def abi_to_sql(abi, template, contract_address):
+  if abi['type'] == 'event':
+    selector = '0x' + event_abi_to_log_topic(abi).hex()
+  else:
+    selector = '0x' + function_abi_to_4byte_selector(abi).hex()
+
+  struct_fields = create_struct_fields_from_event_abi(abi)
+  columns = get_columns_from_event_abi(abi)
   return template.render(
-    abi=dumps(event_abi),
+    abi=dumps(abi),
     contract_address=contract_address.lower(),
-    event_topic=event_topic,
+    selector=selector,
     struct_fields=struct_fields,
     columns=columns
   )
 
 def contract_to_sqls(contract_address):
-  result = {}
   abi = read_abi_from_address(contract_address)
-  event_abis = get_events_from_abi(abi)
-  tpl = Template(TEMPLATE)
-  for a in event_abis:
-    result[a['name']] = event_to_sql(a, tpl, contract_address)
+
+  event_tpl = Template(SQL_TEMPLATE_FOR_EVENT)
+  function_tpl = Template(SQL_TEMPLATE_FOR_FUNCTION)
+
+  result = {}
+  for a in filter_by_type(abi, 'event'):
+    result[a['name']] = abi_to_sql(a, event_tpl, contract_address)
+  for a in filter_by_type(abi, 'function'):
+    result[a['name']] = abi_to_sql(a, function_tpl, contract_address)
   return result
 
 ### FLASK
@@ -156,7 +225,7 @@ async def tables(request, contract):
     return response.json(tables)
 
 @app.route('/api/contract/<contract>')
-async def tables(request, contract):
+async def contract(request, contract):
     c = read_contract_from_address(contract)
     return response.json(c)
 
