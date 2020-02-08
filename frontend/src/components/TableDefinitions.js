@@ -12,10 +12,14 @@ export class TableDefinitions extends Component {
       dataset,
       handleChangeDataset,
     } = this.props;
+    const events = Object.entries(tables).filter(q => q[1].parser.type == 'log');
+    const functions = Object.entries(tables).filter(q => q[1].parser.type == 'trace');
     return (
       <Card className="m-3" style={{ width: 480 }} body>
-          <p>{`${Object.entries(queries).length} events found in contract ${contract.ContractName}:`}</p>
-          <ol>{Object.entries(tables).map(obj => <li>{obj[0]}</li>)}</ol>
+          <p>{`${events.length} events found in contract ${contract.ContractName}:`}</p>
+          <ol>{events.map(obj => <li>{obj[0]}</li>)}</ol>
+          <p>{`${functions.length} functions found in contract ${contract.ContractName}:`}</p>
+          <ol>{functions.map(obj => <li>{obj[0]}</li>)}</ol>
           <InputDataset
             tables={tables}
             contract={contract}
