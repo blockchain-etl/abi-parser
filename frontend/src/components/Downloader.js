@@ -29,7 +29,7 @@ export class Downloader extends Component {
               }
             );
           }}
-        >Download Table Definitions for Events"</Button>
+        >Download Table Definitions for Events</Button>
       </div>
     )
   }
