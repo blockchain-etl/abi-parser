@@ -1,10 +1,9 @@
-from sanic import Sanic, response
 from requests import get
 from jinja2 import Template
 from eth_utils import event_abi_to_log_topic, function_abi_to_4byte_selector
 from json import loads, dumps
-
-from sanic_cors import CORS
+from flask import Flask, jsonify
+from flask_cors import CORS
 
 PORT = 3000
 ETHERSCAN_API_KEY = '6H8VRTDHJVS6II983YY3DN8NCVBBHDA3MX' # should be env var, but whatever
@@ -100,7 +99,7 @@ SELECT
 FROM parsed_traces
 '''
 
-app = Sanic()
+app = Flask(__name__)
 CORS(app)
 
 dataset_name = '<INSERT_DATASET_NAME>'
@@ -203,31 +202,31 @@ def contract_to_sqls(contract_address):
     result[a['name']] = abi_to_sql(a, function_tpl, contract_address)
   return result
 
-### FLASK
+### WEB SERVER
 
 @app.route('/api/')
-async def index(request):
-    return response.json({'status': 'alive'})
+def index():
+    return jsonify({'status': 'alive'})
 
 @app.route('/api/test')
-async def test(request):
-    return response.json({'status': 'test'})
+def test():
+    return jsonify({'status': 'test'})
 
 
 @app.route('/api/queries/<contract>')
-async def queries(request, contract):
+def queries(contract):
     queries = contract_to_sqls(contract)
-    return response.json(queries)
+    return jsonify(queries)
 
 @app.route('/api/tables/<contract>')
-async def tables(request, contract):
+def tables(contract):
     tables = contract_to_table_definitions(contract)
-    return response.json(tables)
+    return jsonify(tables)
 
 @app.route('/api/contract/<contract>')
-async def contract(request, contract):
+def contract(contract):
     c = read_contract_from_address(contract)
-    return response.json(c)
+    return jsonify(c)
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=PORT)

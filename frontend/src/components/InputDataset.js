@@ -21,7 +21,7 @@ export class InputDataset extends Component {
               <Form.Text>
                 For <a
                   href="https://github.com/blockchain-etl/ethereum-etl-airflow"
-                  rel="noopener"
+                  rel="noopener noreferrer"
                   target="_blank"
                 >Blockchain-ETL</a>
               </Form.Text>
