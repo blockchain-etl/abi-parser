@@ -47,7 +47,7 @@ class App extends Component {
   }
 
   async fetchData() {
-    const address = this.state.address.toLowerCase();
+    const address = this.state.address;
     const queriesApi = `${API_ENDPOINT}queries/${address}`;
     const queriesRes = await fetch(queriesApi);
     const queries = await queriesRes.json()
