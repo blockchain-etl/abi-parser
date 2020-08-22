@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from requests import get
 from jinja2 import Template
 from eth_utils import event_abi_to_log_topic, function_abi_to_4byte_selector
@@ -153,9 +155,11 @@ def contract_to_table_definitions(contract_address):
 
   result = {}
   for a in filter_by_type(abi, 'event'):
-    result[a['name']] = abi_to_table_definition(a, contract_address, 'log')
+    abi_item_key = get_abi_item_key(abi, a)
+    result[abi_item_key] = abi_to_table_definition(a, contract_address, 'log')
   for a in filter_by_type(abi, 'function'):
-    result[a['name']] = abi_to_table_definition(a, contract_address, 'trace')
+    abi_item_key = get_abi_item_key(abi, a)
+    result[abi_item_key] = abi_to_table_definition(a, contract_address, 'trace')
   return result
 
 
@@ -189,6 +193,22 @@ def abi_to_sql(abi, template, contract_address):
     columns=columns
   )
 
+
+def get_abi_item_key(abi, abi_item):
+  name_counts = defaultdict(int)
+  for a in abi:
+    if 'name' in a:
+      name_counts[a['name']] += 1
+
+  is_ambiguous = name_counts[abi_item['name']] > 1
+
+  key = abi_item['name']
+  if is_ambiguous:
+    input_types = [i['type'] for i in abi_item.get('inputs', [])]
+    if input_types:
+      key = abi_item['name'] + '_' + '_'.join(input_types)
+  return key
+
 def contract_to_sqls(contract_address):
   abi = read_abi_from_address(contract_address)
 
@@ -197,9 +217,11 @@ def contract_to_sqls(contract_address):
 
   result = {}
   for a in filter_by_type(abi, 'event'):
-    result[a['name']] = abi_to_sql(a, event_tpl, contract_address)
+    abi_item_key = get_abi_item_key(abi, a)
+    result[abi_item_key] = abi_to_sql(a, event_tpl, contract_address)
   for a in filter_by_type(abi, 'function'):
-    result[a['name']] = abi_to_sql(a, function_tpl, contract_address)
+    abi_item_key = get_abi_item_key(abi, a)
+    result[abi_item_key] = abi_to_sql(a, function_tpl, contract_address)
   return result
 
 ### WEB SERVER
