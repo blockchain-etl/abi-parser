@@ -8,8 +8,8 @@ import Spinner from 'react-bootstrap/Spinner'
 import Query from './components/Query';
 import TableDefinitions from './components/TableDefinitions';
 
-const API_ENDPOINT = '/api/';
-//const API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
+// const API_ENDPOINT = 'http://127.0.0.1:3000/';
+const API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
 
 const cardStyle = {
   width: 900
@@ -22,6 +22,7 @@ class App extends Component {
     this.state = {
       address: '',
       dataset: '',
+      name: '',
       isLoading: false,
     }
   }
@@ -29,6 +30,17 @@ class App extends Component {
   handleChange(e) {
     this.setState({
       address: e.target.value
+    })
+  }
+
+  handleChangeContractName(e) {
+    this.setState({
+      name: e.target.value 
+    })
+    const clone = JSON.parse(JSON.stringify(this.state.contract));
+    clone.ContractName = e.target.value 
+    this.setState({
+      contract : clone
     })
   }
 
@@ -57,7 +69,9 @@ class App extends Component {
     const contractApi = `${API_ENDPOINT}contract/${address}`;
     const contractRes = await fetch(contractApi);
     const contract = await contractRes.json()
+    const name = contract.ContractName
     this.setState({
+      name,
       queries,
       tables,
       contract,
@@ -66,7 +80,7 @@ class App extends Component {
   }
 
   render() {
-    const { queries, tables, contract, address, dataset, isLoading} = this.state;
+    const { queries, tables, contract, address, dataset, name, isLoading} = this.state;
     return (
       <div className="App">
         <Input
@@ -84,7 +98,9 @@ class App extends Component {
           queries={queries}
           cardStyle={cardStyle}
           dataset={dataset}
+          name={name}
           handleChangeDataset={this.handleChangeDataset.bind(this)}
+          handleChangeContractName={this.handleChangeContractName.bind(this)}
           />}
         {!isLoading && queries && tables &&
           Object.entries(queries).map(obj => <Query
