@@ -8,8 +8,8 @@ import Spinner from 'react-bootstrap/Spinner'
 import Query from './components/Query';
 import TableDefinitions from './components/TableDefinitions';
 
-// const API_ENDPOINT = 'http://127.0.0.1:3000/';
-const API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
+const API_ENDPOINT = '/api/';
+// const API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
 
 const cardStyle = {
   width: 900
