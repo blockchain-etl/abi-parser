@@ -5,7 +5,7 @@ import Downloader from './Downloader'
 
 export class InputDataset extends Component {
   render() {
-    const { tables, contract, dataset, handleChangeDataset } = this.props;
+    const { tables, contract, dataset, name, handleChangeDataset, handleChangeContractName } = this.props;
     return (
       <div>
         <Form onSubmit={(e) => e.preventDefault()}>
@@ -25,6 +25,14 @@ export class InputDataset extends Component {
                   target="_blank"
                 >Blockchain-ETL</a>
               </Form.Text>
+              <Form.Label>Contract Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder={name}
+                value={name}
+                onChange={handleChangeContractName.bind(this)}
+                required
+              />
             </Form.Group>
             <Downloader
               tables={tables}
