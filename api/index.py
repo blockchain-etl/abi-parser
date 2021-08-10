@@ -16,6 +16,13 @@ PORT = 3000
 
 ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY")
 POLYGONSCAN_API_KEY = os.environ.get("POLYGONSCAN_API_KEY")
+ETHERSCAN_BASE_URL = 'https://api.etherscan.io'
+POLYGONSCAN_BASE_URL = 'https://api.polygonscan.com'
+
+CHAINCONFIG = {'ethereum': {'API_KEY': ETHERSCAN_API_KEY, "BASE_URL": ETHERSCAN_BASE_URL},
+               'polygon': {'API_KEY': POLYGONSCAN_API_KEY, "BASE_URL": POLYGONSCAN_BASE_URL}}
+
+
 SOLIDITY_TO_BQ_TYPES = {
     'address': 'STRING',
 }
@@ -118,34 +125,23 @@ table_description = ''
 # UTILS
 
 
-def read_abi_from_address(address):
+def read_abi_from_address(address, chain):
+    config = CHAINCONFIG.get(chain, {})
     a = address.lower()
-    k = ETHERSCAN_API_KEY
-    url = f'https://api.etherscan.io/api?module=contract&action=getabi&address={a}&apikey={k}'
+    k = config.get("API_KEY")
+    base_url = config.get("BASE_URL")
+    url = f'{base_url}/api?module=contract&action=getabi&address={a}&apikey={k}'
     json_response = get(url).json()
     return loads(json_response['result'])
 
 
-def read_contract(contract):
+def read_contract(contract, chain):
     if contract is not None and contract.startswith('0x'):
+        config = CHAINCONFIG.get(chain, {})
         a = contract.lower()
-        k = ETHERSCAN_API_KEY
-        url = f'https://api.etherscan.io/api?module=contract&action=getsourcecode&address={a}&apikey={k}'
-        json_response = get(url).json()
-        contract = [x for x in json_response['result']
-                    if 'ContractName' in x][0]
-        return contract
-    else:
-        return {
-            'ContractName': 'unknown'
-        }
-
-
-def read_contract_polygon(contract):
-    if contract is not None and contract.startswith('0x'):
-        a = contract.lower()
-        k = POLYGONSCAN_API_KEY
-        url = f'https://api.polygonscan.com/api?module=contract&action=getsourcecode&address={a}&apikey={k}'
+        k = config.get("API_KEY")
+        base_url = config.get("BASE_URL")
+        url = f'{base_url}/api?module=contract&action=getsourcecode&address={a}&apikey={k}'
         json_response = get(url).json()
         contract = [x for x in json_response['result']
                     if 'ContractName' in x][0]
@@ -197,10 +193,10 @@ def abi_to_table_definition(abi, contract_address, parser_type):
     return result
 
 
-def contract_to_table_definitions(contract):
+def contract_to_table_definitions(contract, chain):
     if contract is not None and contract.startswith('0x'):
         contract_address = contract.lower()
-        abi = read_abi_from_address(contract)
+        abi = read_abi_from_address(contract, chain)
     else:
         contract_address = 'unknown'
         abi = json.loads(contract)
@@ -249,10 +245,10 @@ def abi_to_sql(abi, template, contract_address):
     )
 
 
-def contract_to_sqls(contract):
+def contract_to_sqls(contract, chain):
     if contract is not None and contract.startswith('0x'):
         contract_address = contract.lower()
-        abi = read_abi_from_address(contract_address)
+        abi = read_abi_from_address(contract_address, chain)
     else:
         contract_address = 'unknown'
         abi = json.loads(contract)
@@ -280,27 +276,21 @@ def test():
     return jsonify({'status': 'test'})
 
 
-@app.route('/api/queries/<contract>')
-def queries(contract):
-    queries = contract_to_sqls(contract)
+@app.route('/api/queries/<contract>/<chain>')
+def queries(contract, chain):
+    queries = contract_to_sqls(contract, chain)
     return jsonify(queries)
 
 
-@app.route('/api/tables/<contract>')
-def tables(contract):
-    tables = contract_to_table_definitions(contract)
+@app.route('/api/tables/<contract>/<chain>')
+def tables(contract, chain):
+    tables = contract_to_table_definitions(contract, chain)
     return jsonify(tables)
 
 
-@app.route('/api/contract/<contract>')
-def contract(contract):
-    c = read_contract(contract)
-    return jsonify(c)
-
-
-@app.route('/api/polygon/contract/<contract>')
-def contract_polygon(contract):
-    c = read_contract_polygon(contract)
+@app.route('/api/contract/<contract>/<chain>')
+def contract(contract, chain):
+    c = read_contract(contract, chain)
     return jsonify(c)
 
 
