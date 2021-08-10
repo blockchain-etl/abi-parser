@@ -16,11 +16,14 @@ PORT = 3000
 
 ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY")
 POLYGONSCAN_API_KEY = os.environ.get("POLYGONSCAN_API_KEY")
+BSCSCAN_API_KEY = os.environ.get("BSCSCAN_API_KEY")
 ETHERSCAN_BASE_URL = 'https://api.etherscan.io'
 POLYGONSCAN_BASE_URL = 'https://api.polygonscan.com'
+BSCSCAN_BASE_URL = 'https://api.bscscan.com/'
 
 CHAINCONFIG = {'ethereum': {'API_KEY': ETHERSCAN_API_KEY, "BASE_URL": ETHERSCAN_BASE_URL},
-               'polygon': {'API_KEY': POLYGONSCAN_API_KEY, "BASE_URL": POLYGONSCAN_BASE_URL}}
+               'polygon': {'API_KEY': POLYGONSCAN_API_KEY, "BASE_URL": POLYGONSCAN_BASE_URL},
+               'binance-smart-chain': {'API_KEY': BSCSCAN_API_KEY, "BASE_URL": BSCSCAN_BASE_URL}}
 
 
 SOLIDITY_TO_BQ_TYPES = {
