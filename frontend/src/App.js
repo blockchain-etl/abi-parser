@@ -9,8 +9,15 @@ import Query from "./components/Query";
 import TableDefinitions from "./components/TableDefinitions";
 import ChainSelector from "./components/ChainSelector";
 
-const API_ENDPOINT = "http://localhost:3000/api/";
-//const API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
+var API_ENDPOINT = "";
+if (process.env.NODE_ENV === "development") {
+  // for developmenmt
+  API_ENDPOINT = "http://localhost:3000/api/";
+} else {
+  // in prod
+  API_ENDPOINT = "/api";
+  //API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
+}
 
 const cardStyle = {
   width: 900,
