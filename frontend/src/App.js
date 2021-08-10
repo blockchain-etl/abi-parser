@@ -65,13 +65,14 @@ class App extends Component {
 
   async fetchData() {
     const address = this.state.address;
-    const queriesApi = `${API_ENDPOINT}queries/${address}`;
+    const chain = this.state.chain;
+    const queriesApi = `${API_ENDPOINT}queries/${address}/${chain}`;
     const queriesRes = await fetch(queriesApi);
     const queries = await queriesRes.json();
-    const tablesApi = `${API_ENDPOINT}tables/${address}`;
+    const tablesApi = `${API_ENDPOINT}tables/${address}/${chain}`;
     const tablesRes = await fetch(tablesApi);
     const tables = await tablesRes.json();
-    const contractApi = `${API_ENDPOINT}contract/${address}`;
+    const contractApi = `${API_ENDPOINT}contract/${address}/${chain}`;
     const contractRes = await fetch(contractApi);
     const contract = await contractRes.json();
     const name = contract.ContractName;
