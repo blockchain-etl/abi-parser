@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Card from "react-bootstrap/Card";
+// import TableLink from "./TableLink";
 import InputDataset from "./InputDataset";
 
 export class TableDefinitions extends Component {
@@ -7,6 +8,7 @@ export class TableDefinitions extends Component {
     const {
       tables,
       contract,
+      //   queries,
       dataset,
       name,
       handleChangeDataset,
