@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^5.1.0",
+    "env-cmd": "^10.1.0",
     "multi-download": "^3.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
@@ -16,7 +17,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "yarn build",
-    "deploy": "firebase deploy --only hosting:abi-parser"
+    "deploy:dev": "firebase deploy --only hosting:nansen-contract-parser-dev",
+    "deploy:prod": "firebase deploy --only hosting:nansen-contract-parser-prod",
+    "build:prod": "react-scripts build -p",
+    "build:dev": "react-scripts build"
   },
   "eslintConfig": {
     "extends": "react-app"

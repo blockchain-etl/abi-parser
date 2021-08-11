@@ -3,3 +3,6 @@
 api/__pycache__/
 .env
 .DS_Store 
+build
+.fiebase
+node_modules

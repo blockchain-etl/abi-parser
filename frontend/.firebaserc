@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "d5-nansen-dev"
+    "default": "nansen-contract-parser-dev",
+    "dev": "nansen-contract-parser-dev",
+    "prod": "nansen-contract-parser-prod"
   }
 }

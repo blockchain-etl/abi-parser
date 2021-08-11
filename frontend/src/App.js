@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === "development") {
   API_ENDPOINT = "http://localhost:3000/api/";
 } else {
   // in prod
-  API_ENDPOINT = "/api";
+  API_ENDPOINT = "https://contract-parser-api-s27o6wzppa-uc.a.run.app/api/";
   //API_ENDPOINT = 'https://abi-parser.now.sh/api/'; // NOTE: use this when deploying to Firebase
 }
 
