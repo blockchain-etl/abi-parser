@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-PORT = 3000
 # should be env var, but whatever
 
 ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY")
@@ -298,4 +297,5 @@ def contract(contract, chain):
 
 
 if __name__ == "__main__":
+    PORT = int(os.getenv("PORT")) if os.getenv("PORT") else 3000
     app.run(debug=True, host='127.0.0.1', port=PORT)
