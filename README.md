@@ -33,6 +33,22 @@ Currently it works by connecting to Etherscan based explorer api's to grab the A
 
 It currently supports grabbing data from etherscan, polygonscan and bscscan
 
+## Testing Locally while developing
+
+Move into the `contract-parser-api` directory
+
+1. Install backend dependencies using pipenv, poetry or any of your chooses python virutal environments, by running `pip install -r requirements.txt`
+
+2. Simply run `python3 app.py`
+
+3. Move to the `frontend` directory
+
+4. ``yarn install`
+
+5. `yarn start`
+
+6. If everything worked as expected you should have a working local version of contract-parser fronted deployed that will use the api that you just started
+
 ## Hosting
 
 Read below to understand how the project is deployed
